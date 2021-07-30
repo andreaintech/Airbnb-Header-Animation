@@ -1,115 +1,83 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
+import React from 'react';
+import {
+  StyleSheet,
+  View,
+  Platform,
+  Image,
+  StatusBar,
+  Text
+} from 'react-native';
+import Animated from "react-native-reanimated";
 
- import React from 'react';
- import {
-   SafeAreaView,
-   ScrollView,
-   StatusBar,
-   StyleSheet,
-   Text,
-   useColorScheme,
-   View,
- } from 'react-native';
+const images = Array.from({ length: 30 }, (x, index) => ({ id: index }))
+console.log('imagess: ', images)
+const STATUS_BAR = StatusBar.currentHeight || 24;
+const HEADER_HEIGHT = Platform.OS == 'ios' ? 115 : 40 + STATUS_BAR;
 
- import {
-   Colors,
-   DebugInstructions,
-   Header,
-   LearnMoreLinks,
-   ReloadInstructions,
- } from 'react-native/Libraries/NewAppScreen';
+const getImage = (i: number) => `https://source.unsplash.com/600x${600 + i}/?beach`;
 
- const Section: React.FC<{
-   title: string;
- }> = ({children, title}) => {
-   const isDarkMode = useColorScheme() === 'dark';
-   return (
-     <View style={styles.sectionContainer}>
-       <Text
-         style={[
-           styles.sectionTitle,
-           {
-             color: isDarkMode ? Colors.white : Colors.black,
-           },
-         ]}>
-         {title}
-       </Text>
-       <Text
-         style={[
-           styles.sectionDescription,
-           {
-             color: isDarkMode ? Colors.light : Colors.dark,
-           },
-         ]}>
-         {children}
-       </Text>
-     </View>
-   );
- };
+const App = () => {
+  const scrollY = new Animated.Value(0);
+  const diffClampScrollY = Animated.diffClamp(scrollY, 0, HEADER_HEIGHT);
+  const headerY = Animated.interpolateNode(diffClampScrollY, {
+    inputRange: [0, HEADER_HEIGHT],
+    outputRange: [0, -HEADER_HEIGHT]
+  })
 
- const App = () => {
-   const isDarkMode = useColorScheme() === 'dark';
+  return (
+    <View style={styles.container}>
+      <Animated.View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: 0,
+          height: HEADER_HEIGHT,
+          backgroundColor: 'rgba(70, 70, 94, 0.15)',
+          zIndex: 1000,
+          elevation: 1000,
+          transform: [{ translateY: headerY }],
+          alignItems: "center",
+          justifyContent: "center",
+          paddingTop: 45,
+        }}
+      >
+        <Text style={styles.headerText}>Animated Header</Text>
+      </Animated.View>
 
-   const backgroundStyle = {
-     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-   };
+      <Animated.ScrollView
+        bounces={false} // Just for iOS
+        scrollEventThrottle={16}
+        onScroll={Animated.event([
+          { nativeEvent: { contentOffset: { y: scrollY } } },
+        ])}
+        style={styles.animatedScrollView}
+      >
+        {images.map((image, index) => (
+          <View
+            key={image.id}
+            style={{ height: 400, margin: 20 }}
+          >
+            <Image style={styles.image} source={{ uri: getImage(index) }} />
+          </View>
+        ))}
+      </Animated.ScrollView>
+    </View>
+  );
+};
 
-   return (
-     <SafeAreaView style={backgroundStyle}>
-       <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-       <ScrollView
-         contentInsetAdjustmentBehavior="automatic"
-         style={backgroundStyle}>
-         <Header />
-         <View
-           style={{
-             backgroundColor: isDarkMode ? Colors.black : Colors.white,
-           }}>
-           <Section title="Step One">
-             Edit <Text style={styles.highlight}>App.js</Text> to change this
-             screen and then come back to see your edits.
-           </Section>
-           <Section title="See Your Changes">
-             <ReloadInstructions />
-           </Section>
-           <Section title="Debug">
-             <DebugInstructions />
-           </Section>
-           <Section title="Learn More">
-             Read the docs to discover what to do next:
-           </Section>
-           <LearnMoreLinks />
-         </View>
-       </ScrollView>
-     </SafeAreaView>
-   );
- };
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  animatedScrollView: { paddingTop: HEADER_HEIGHT },
+  headerText: { color: 'white', fontSize: 20, },
+  image: {
+    flex: 1,
+    height: '100%',
+    width: '100%',
+    borderRadius: 10,
+  }
+});
 
- const styles = StyleSheet.create({
-   sectionContainer: {
-     marginTop: 32,
-     paddingHorizontal: 24,
-   },
-   sectionTitle: {
-     fontSize: 24,
-     fontWeight: '600',
-   },
-   sectionDescription: {
-     marginTop: 8,
-     fontSize: 18,
-     fontWeight: '400',
-   },
-   highlight: {
-     fontWeight: '700',
-   },
- });
-
- export default App;
+export default App;
